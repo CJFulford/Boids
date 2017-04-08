@@ -2,9 +2,8 @@
 
 layout (location = 0) in vec3 vertex;
 
-uniform mat4 modelview;
 uniform mat4 projection;
-
+uniform mat4 modelview;
 
 void main (void)
 {

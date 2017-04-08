@@ -166,8 +166,11 @@
     <ClInclude Include="src\Tools.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\plane.frag" />
-    <None Include="shaders\plane.vert" />
+    <None Include="shaders\boid.frag" />
+    <None Include="shaders\boid.geom" />
+    <None Include="shaders\boid.vert" />
+    <None Include="shaders\floor.frag" />
+    <None Include="shaders\floor.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,22 +1,25 @@
 #include "Header.h"
 #include "ShaderBuilder.h"
+#include <vector>
 
-#include <iostream>
-#include <string>
-
-using namespace glm;
+#define NUM_OF_BOIDS 1
 
 const GLfloat clearColor[] = { 0.f, 0.f, 0.f };
+GLuint	
+    floorVertexArray, 
+    floorProgram,
+    
+    boidVertexArray,
+    boidProgram;
 
-GLuint	floorVertexArray, floorProgram;
-
-// rendering
+// %%%%%%%%%%%%%%%%%%%%%%%%% shader generation
 void generateShaders()
 {
-    floorProgram = generateProgram("shaders/plane.vert", "shaders/plane.frag");
+    floorProgram = generateProgram("shaders/floor.vert", "shaders/floor.frag");
+    boidProgram = generateProgram("shaders/boid.vert", "shaders/boid.geom", "shaders/boid.frag");
 }
 
-// %%%%%%%%%%%%%%%%%%%%%%%%% The floor
+// %%%%%%%%%%%%%%%%%%%%%%%%% floor
 void generateFloorBuffer()
 {
 #define FLOORSIZE 5.f
@@ -53,16 +56,77 @@ void renderFloor()
     glBindVertexArray(0);
 }
 
+// %%%%%%%%%%%%%%%%%%%%%%%%% boids
+void generateBoidBuffer()
+{
+#define FLOORSIZE 5.f
+#define FLOORHEIGHT -1.f
+    GLuint 
+        positionBuffer = 0,
+        headingBuffer = 0,
+        normalBuffer = 0;
 
+    glGenVertexArrays(1, &boidVertexArray);
+    glBindVertexArray(boidVertexArray);
+
+    std::vector<Boid*> boids;
+
+    for (int i = 0; i < NUM_OF_BOIDS; i++)
+    {
+        boids.push_back(new Boid());
+    }
+    
+    std::vector<glm::vec3> positions, headings, normals;
+    for (Boid *boid : boids)
+    {
+        positions.push_back(boid->getPosition());
+        positions.push_back(boid->getHeading());
+        positions.push_back(boid->getNormal());
+    }
+
+
+    glGenBuffers(1, &positionBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions[0]) * positions.size(), &positions[0], GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+
+    glGenBuffers(1, &headingBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, headingBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(headings[0]) * headings.size(), &headings[0], GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(1);
+
+    glGenBuffers(1, &normalBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals[0]) * normals.size(), &normals[0], GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+}
+void renderBoids()
+{
+    glBindVertexArray(boidVertexArray);
+    glUseProgram(boidProgram);
+
+    passBasicUniforms(boidProgram);
+
+    glDrawArrays(GL_POINTS, 0, NUM_OF_BOIDS);
+
+    glBindVertexArray(0);
+}
+
+// %%%%%%%%%%%%%%%%%%%%%%%%% Program
 int main()
 {
+    // initial setup
     GLFWwindow* window = generateWindow();
-
     generateShaders();
-
-
     generateFloorBuffer();
+    generateBoidBuffer();
 
+    // rendering
 	while (!glfwWindowShouldClose(window))
 	{
         glEnable(GL_DEPTH_TEST);
@@ -70,12 +134,12 @@ int main()
         glClearBufferfv(GL_COLOR, 0, clearColor);
 
         renderFloor();
+        renderBoids();
 		
         glDisable(GL_DEPTH_TEST);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
 
 	// Shutdow the program
 	glfwDestroyWindow(window);

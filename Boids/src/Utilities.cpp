@@ -10,6 +10,7 @@ using namespace glm;
 
 #define WINDOW_WIDTH	700
 #define WINDOW_HEIGHT	500
+#define WINDOW_NAME     "Boid Simulation"
 
 #define defaultZoom		2.f
 #define defaultCamUp	vec3(0.f, 1.f, 0.f)
@@ -39,11 +40,12 @@ void passBasicUniforms(GLuint program)
 {
     #define X_AXIS glm::vec3(1.f, 0.f, 0.f)
     #define Y_AXIS glm::vec3(0.f, 1.f, 0.f)
-	mat4	modelview = lookAt(camLoc * zoom, camCent, camUp),
-			projection = perspective(FOV, aspectRatio, zNear, zFar);
+	mat4
+        projection = perspective(FOV, aspectRatio, zNear, zFar),
 
-	mat4	rotationX  = rotate(identity , rotate_x  * PI / 180.0f, X_AXIS);
-			modelview *= rotate(rotationX, rotate_y  * PI / 180.0f, Y_AXIS);
+        modelview = lookAt(camLoc * zoom, camCent, camUp),
+	    rotationX  = rotate(identity , rotate_x  * PI / 180.0f, X_AXIS);
+		modelview *= rotate(rotationX, rotate_y  * PI / 180.0f, Y_AXIS);
 
 	glUniformMatrix4fv(glGetUniformLocation(program, "modelview"), 1, GL_FALSE, value_ptr(modelview));
 	glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, value_ptr(projection));
@@ -125,7 +127,7 @@ GLFWwindow* generateWindow()
     glfwWindowHint(GLFW_DOUBLEBUFFER, true);
     glfwWindowHint(GLFW_SAMPLES, antiAliasing);
 
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Physics Sim", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME, NULL, NULL);
 
     if (!window) {
         std::cout << "Failed to create window" << std::endl;
