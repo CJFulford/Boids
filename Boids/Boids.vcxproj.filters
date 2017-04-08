@@ -49,9 +49,6 @@
     <None Include="shaders\plane.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="shaders\plane.geom">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
     <None Include="shaders\plane.vert">
       <Filter>Source Files\Shaders</Filter>
     </None>

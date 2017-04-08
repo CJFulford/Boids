@@ -2,13 +2,24 @@
 
 #include <glm\gtx\transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
-
-#define movement 0.25f
-#define FOV		 45.f
-#define zNear	.1f
-#define zFar	100.f
+#include <iostream>
 
 using namespace glm;
+
+#define identity	    mat4(1.f)
+
+#define WINDOW_WIDTH	700
+#define WINDOW_HEIGHT	500
+
+#define defaultZoom		2.f
+#define defaultCamUp	vec3(0.f, 1.f, 0.f)
+#define defaultCamLoc	vec3(0.f, .5f, 2.f)
+#define defaultCamCent	vec3(0.f, 0.f, 0.f)
+
+#define FOV		        45.f
+#define zNear	        .1f
+#define zFar	        100.f
+
 
 double  
     mouse_old_x, 
@@ -38,6 +49,7 @@ void passBasicUniforms(GLuint program)
 	glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, value_ptr(projection));
 }
 
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% openGL info
 void printOpenGLVersion(GLenum majorVer, GLenum minorVer, GLenum langVer)
 {
     GLint major, minor;
@@ -96,4 +108,47 @@ void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
 	aspectRatio = (float)width / (float)height;
 	glViewport(0, 0, width, height);
+}
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% window setup
+GLFWwindow* generateWindow()
+{
+#define antiAliasing    4
+
+    if (!glfwInit())
+    {
+        std::cout << "Failed to initialize GLFW" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    glfwSetErrorCallback(errorCallback);
+
+    glfwWindowHint(GLFW_DOUBLEBUFFER, true);
+    glfwWindowHint(GLFW_SAMPLES, antiAliasing);
+
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Physics Sim", NULL, NULL);
+
+    if (!window) {
+        std::cout << "Failed to create window" << std::endl;
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+    }
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetScrollCallback(window, scrollCallback);
+    glfwSetCursorPosCallback(window, cursorPositionCallback);
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
+
+
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGL())
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    printOpenGLVersion(GL_MAJOR_VERSION, GL_MINOR_VERSION, GL_SHADING_LANGUAGE_VERSION);
+
+    glfwSwapInterval(1);
+
+    return window;
 }

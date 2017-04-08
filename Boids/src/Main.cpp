@@ -1,12 +1,10 @@
 #include "Header.h"
 #include "ShaderBuilder.h"
-#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 #include <string>
 
 using namespace glm;
-
-#define antiAliasing		4
 
 const GLfloat clearColor[] = { 0.f, 0.f, 0.f };
 
@@ -18,22 +16,11 @@ void generateShaders()
     floorProgram = generateProgram("shaders/plane.vert", "shaders/plane.frag");
 }
 
-void renderFloor()
+// %%%%%%%%%%%%%%%%%%%%%%%%% The floor
+void generateFloorBuffer()
 {
-    glBindVertexArray(floorVertexArray);
-    glUseProgram(floorProgram);
-
-    passBasicUniforms(floorProgram);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glBindVertexArray(0);
-}
-
-void generateGroundBuffer()
-{
-    #define FLOORSIZE 5.f
-    #define FLOORHEIGHT -1.f
+#define FLOORSIZE 5.f
+#define FLOORHEIGHT -1.f
     GLuint vertexBuffer = 0;
 
     glGenVertexArrays(1, &floorVertexArray);
@@ -54,53 +41,27 @@ void generateGroundBuffer()
 
     glBindVertexArray(0);
 }
-
-GLFWwindow* generateWindow()
+void renderFloor()
 {
-    if (!glfwInit())
-    {
-        std::cout << "Failed to initialize GLFW" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    glfwSetErrorCallback(errorCallback);
+    glBindVertexArray(floorVertexArray);
+    glUseProgram(floorProgram);
 
-    glfwWindowHint(GLFW_DOUBLEBUFFER, true);
-    glfwWindowHint(GLFW_SAMPLES, antiAliasing);
+    passBasicUniforms(floorProgram);
 
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Physics Sim", NULL, NULL);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    if (!window) {
-        std::cout << "Failed to create window" << std::endl;
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-    glfwSetKeyCallback(window, keyCallback);
-    glfwSetScrollCallback(window, scrollCallback);
-    glfwSetCursorPosCallback(window, cursorPositionCallback);
-    glfwSetWindowSizeCallback(window, windowSizeCallback);
-    
-    
-    glfwMakeContextCurrent(window);
-
-    if (!gladLoadGL())
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    printOpenGLVersion(GL_MAJOR_VERSION, GL_MINOR_VERSION, GL_SHADING_LANGUAGE_VERSION);
-    
-    glfwSwapInterval(1);
-
-    return window;
+    glBindVertexArray(0);
 }
+
 
 int main()
 {
     GLFWwindow* window = generateWindow();
 
     generateShaders();
-    generateGroundBuffer();
+
+
+    generateFloorBuffer();
 
 	while (!glfwWindowShouldClose(window))
 	{
