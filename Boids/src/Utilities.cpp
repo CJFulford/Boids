@@ -8,18 +8,18 @@ using namespace glm;
 
 #define identity	    mat4(1.f)
 
-#define WINDOW_WIDTH	700
-#define WINDOW_HEIGHT	500
+#define WINDOW_WIDTH	1200
+#define WINDOW_HEIGHT	900
 #define WINDOW_NAME     "Boid Simulation"
 
-#define defaultZoom		2.f
+#define defaultZoom		(NUM_OF_BOIDS / 1000.f)
 #define defaultCamUp	vec3(0.f, 1.f, 0.f)
-#define defaultCamLoc	vec3(0.f, .5f, 2.f)
+#define defaultCamLoc	vec3(.2f, .5f, 2.f)
 #define defaultCamCent	vec3(0.f, 0.f, 0.f)
 
 #define FOV		        45.f
 #define zNear	        .1f
-#define zFar	        100.f
+#define zFar	        (defaultZoom * 10.f)
 
 
 double  
@@ -40,6 +40,8 @@ void passBasicUniforms(GLuint program)
 {
     #define X_AXIS glm::vec3(1.f, 0.f, 0.f)
     #define Y_AXIS glm::vec3(0.f, 1.f, 0.f)
+    #define PI 3.14159265359f
+    #define identity glm::mat4(1.f)
 	mat4
         projection = perspective(FOV, aspectRatio, zNear, zFar),
 

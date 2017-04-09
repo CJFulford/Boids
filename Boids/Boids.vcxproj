@@ -155,6 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="libraries\GLAD V4.5\src\glad.c" />
+    <ClCompile Include="src\Boid.cpp" />
     <ClCompile Include="src\Utilities.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\ShaderBuilder.cpp" />
