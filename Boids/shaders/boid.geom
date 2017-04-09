@@ -1,32 +1,67 @@
 #version 430 core
 
 layout(points) in;
-layout(triangle_Strip, max_vertices = 3) out;
+layout(triangle_Strip, max_vertices = 12) out;
 
 
 uniform mat4 projection;
 uniform mat4 modelview;
 
-in vec3 position;
-in vec3 heading;
-in vec3 normal;
+in vec3 position[];
+in vec3 heading[];
+in vec3 normal[];
 
-float boidWidth = .2f;
-vec3 sideVec = boidWidth * normalize(cross(heading, up));
+out vec3 pos;
+out vec3 norm;
+
+float widthScale = .1f;
+float headingScale = .4f;
+float heightScale = widthScale / 2.f;
+
+void triangleOut(vec3 p1, vec3 p2, vec3 p3)
+{
+    norm = normalize(cross(p1 - p2, p3 - p2));
+
+    gl_Position = projection * modelview * vec4(p1, 1.f);
+	EmitVertex();
+    gl_Position = projection * modelview * vec4(p2, 1.f);
+	EmitVertex();
+    gl_Position = projection * modelview * vec4(p3, 1.f);
+	EmitVertex();
+    EndPrimitive();
+}
 
 void main (void)
 {
-    gl_Position = projection * modelview * vec4(position + sideVec, 1.f);
-	EmitVertex();
+    pos = position[0];
+    vec3 sideVec = widthScale * normalize(cross(heading[0], normal[0]));
+    vec3 frontVec = heading[0] * headingScale;
+    vec3 topVec = normal[0] * heightScale;
 
-
-    gl_Position = projection * modelview * vec4(position + heading, 1.f);
-	EmitVertex();
-
-
-    gl_Position = projection * modelview * vec4(position - sideVec, 1.f);
-	EmitVertex();
-	
     
-    EndPrimitive();
+    // bottom
+    vec3 p1 = position[0] + sideVec;
+    vec3 p2 = position[0] + frontVec;
+    vec3 p3 = position[0] - sideVec;
+    triangleOut(p1, p2, p3);
+
+    // side 1
+    p1 = position[0] + sideVec;
+    p2 = position[0] + frontVec;
+    p3 = position[0] + topVec;
+    triangleOut(p1, p2, p3);
+
+    // side 2
+    
+    p1 = position[0] + topVec;
+    p2 = position[0] + frontVec;
+    p3 = position[0] - sideVec;
+    triangleOut(p1, p2, p3);
+
+    // back
+    p1 = position[0] + sideVec;
+    p2 = position[0] - sideVec;
+    p3 = position[0] + topVec;
+    triangleOut(p1, p2, p3);
+    
 }

@@ -1,8 +1,10 @@
 #include "Header.h"
 #include "ShaderBuilder.h"
+#include "Tools.h"
+#include "Boid.h"
 #include <vector>
 
-#define NUM_OF_BOIDS 1
+#define NUM_OF_BOIDS 10
 
 const GLfloat clearColor[] = { 0.f, 0.f, 0.f };
 GLuint	
@@ -59,31 +61,45 @@ void renderFloor()
 // %%%%%%%%%%%%%%%%%%%%%%%%% boids
 void generateBoidBuffer()
 {
-#define FLOORSIZE 5.f
-#define FLOORHEIGHT -1.f
     GLuint 
         positionBuffer = 0,
         headingBuffer = 0,
         normalBuffer = 0;
 
-    glGenVertexArrays(1, &boidVertexArray);
-    glBindVertexArray(boidVertexArray);
-
     std::vector<Boid*> boids;
+
+    float 
+        xStartRange = -2.f,
+        xEndRange = 2.f,
+        yStartRange = .5f,
+        yEndRange = 2.f,
+        zStartRange = -2.f,
+        zEndRange = 2.f;
+
+    float FOV = 270.f;
 
     for (int i = 0; i < NUM_OF_BOIDS; i++)
     {
-        boids.push_back(new Boid());
+        boids.push_back(
+            new Boid(
+                generateRandomVector(xStartRange, xEndRange, yStartRange, yEndRange, zStartRange, zEndRange),
+                generateRandomVector(-1, 1),
+                FOV
+            )
+        );
     }
-    
+
     std::vector<glm::vec3> positions, headings, normals;
     for (Boid *boid : boids)
     {
         positions.push_back(boid->getPosition());
-        positions.push_back(boid->getHeading());
-        positions.push_back(boid->getNormal());
+        headings.push_back(boid->getHeading());
+        normals.push_back(boid->getNormal());
     }
 
+
+    glGenVertexArrays(1, &boidVertexArray);
+    glBindVertexArray(boidVertexArray);
 
     glGenBuffers(1, &positionBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);

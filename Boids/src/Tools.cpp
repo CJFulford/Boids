@@ -1,4 +1,5 @@
 #include "Tools.h"
+#include <stdlib.h>
 
 void printVec(glm::vec2 v)
 {
@@ -42,3 +43,24 @@ glm::vec3 rodriguesRotate(glm::vec3 vector, glm::vec3 axis, float angle)
 		(axis * glm::dot(axis, vector) * (1.f - cos(angle))));
 }
 
+float randFloat(float startRange, float endRange)
+{
+     return startRange + (float)(rand()) / ((float)(RAND_MAX / (endRange - startRange)));
+}
+
+// generate random vector in range 0 - 1
+glm::vec3 generateRandomVector()
+{
+    return glm::vec3(rand(), rand(), rand());
+}
+// generate random vector
+glm::vec3 generateRandomVector(float startRange, float endRange)
+{
+    return glm::vec3(randFloat(startRange, endRange), randFloat(startRange, endRange), randFloat(startRange, endRange));
+}
+
+// generate random vector
+glm::vec3 generateRandomVector(float xStartRange, float xEndRange, float yStartRange, float yEndRange, float zStartRange, float zEndRange)
+{
+    return glm::vec3(randFloat(xStartRange, xEndRange), randFloat(yStartRange, yEndRange), randFloat(zStartRange, zEndRange));
+}

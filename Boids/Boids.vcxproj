@@ -161,6 +161,7 @@
     <ClCompile Include="src\Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Boid.h" />
     <ClInclude Include="src\Header.h" />
     <ClInclude Include="src\ShaderBuilder.h" />
     <ClInclude Include="src\Tools.h" />
