@@ -12,7 +12,7 @@ using namespace glm;
 #define WINDOW_HEIGHT	900
 #define WINDOW_NAME     "Boid Simulation"
 
-#define defaultZoom		(NUM_OF_BOIDS / 1000.f)
+#define defaultZoom		max(3.f, (NUM_OF_BOIDS / 1000.f))
 #define defaultCamUp	vec3(0.f, 1.f, 0.f)
 #define defaultCamLoc	vec3(.2f, .5f, 2.f)
 #define defaultCamCent	vec3(0.f, 0.f, 0.f)
@@ -34,6 +34,8 @@ vec3
     camUp	= defaultCamUp,
 	camLoc	= defaultCamLoc,
 	camCent	= defaultCamCent;
+bool 
+    bubbleFloor = true;
 
 
 void passBasicUniforms(GLuint program)
@@ -52,6 +54,8 @@ void passBasicUniforms(GLuint program)
 	glUniformMatrix4fv(glGetUniformLocation(program, "modelview"), 1, GL_FALSE, value_ptr(modelview));
 	glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, value_ptr(projection));
 }
+
+bool checkBubbleFloor() { return bubbleFloor; }
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% openGL info
 void printOpenGLVersion(GLenum majorVer, GLenum minorVer, GLenum langVer)
@@ -83,6 +87,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			generateShaders();
 			std::cout << "Done" << std::endl;
 			break;
+        case (GLFW_KEY_R):
+            bubbleFloor = !bubbleFloor;
+            break;
 		default:
 			break;
 		}

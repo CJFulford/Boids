@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClInclude Include="Boid.h" />
     <ClInclude Include="src\Header.h" />
+    <ClInclude Include="src\Main.h" />
     <ClInclude Include="src\ShaderBuilder.h" />
     <ClInclude Include="src\Tools.h" />
   </ItemGroup>
@@ -171,6 +172,8 @@
     <None Include="shaders\boid.frag" />
     <None Include="shaders\boid.geom" />
     <None Include="shaders\boid.vert" />
+    <None Include="shaders\bubble.frag" />
+    <None Include="shaders\bubble.vert" />
     <None Include="shaders\floor.frag" />
     <None Include="shaders\floor.vert" />
   </ItemGroup>

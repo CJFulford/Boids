@@ -50,6 +50,9 @@
     <ClInclude Include="Boid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\floor.vert">
@@ -65,6 +68,12 @@
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="shaders\boid.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\bubble.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\bubble.vert">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

@@ -8,62 +8,75 @@
 #include <omp.h>
 
 
-const float FLOORSIZE = NUM_OF_BOIDS / 1000.f;
+const float FLOORSIZE = NUM_OF_BOIDS / 10000.f;
 #define FLOORHEIGHT -1.f
-const float INITIAL_POSITION_RANGE = NUM_OF_BOIDS / 1000.f;
+const float INITIAL_POSITION_RANGE = NUM_OF_BOIDS / 10000.f;
 
+#define NEIGHBOURHOOD_RADIUS .25f
+#define BUBBLE_RADIUS .1f
 
 const GLfloat clearColor[] = { 0.f, 0.f, 0.f };
 GLuint	
     floorVertexArray, 
     floorProgram,
+
+    bubbleVertexArray,
+    bubbleProgram,
     
     boidVertexArray,
-    boidProgram;
+    boidProgram,
 
-GLuint
-positionBuffer = 0,
-headingBuffer = 0,
-normalBuffer = 0;
+    positionBuffer = 0,
+    headingBuffer = 0,
+    normalBuffer = 0;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%% shader generation
 void generateShaders()
 {
     floorProgram = generateProgram("shaders/floor.vert", "shaders/floor.frag");
+    bubbleProgram = generateProgram("shaders/bubble.vert", "shaders/bubble.frag");
     boidProgram = generateProgram("shaders/boid.vert", "shaders/boid.geom", "shaders/boid.frag");
 }
 
-// %%%%%%%%%%%%%%%%%%%%%%%%% floor
-void generateFloorBuffer()
+// %%%%%%%%%%%%%%%%%%%%%%%%% bubble representation as floor
+void generateBubbleFloorBuffer()
 {
     GLuint vertexBuffer = 0;
 
-    glGenVertexArrays(1, &floorVertexArray);
-    glBindVertexArray(floorVertexArray);
+    glGenVertexArrays(1, &bubbleVertexArray);
+    glBindVertexArray(bubbleVertexArray);
 
-    GLfloat floorVertices[] = {
-        -FLOORSIZE, FLOORHEIGHT,    -FLOORSIZE,
-        -FLOORSIZE, FLOORHEIGHT,     FLOORSIZE,
-        FLOORSIZE,  FLOORHEIGHT,    -FLOORSIZE,
-        FLOORSIZE,  FLOORHEIGHT,    FLOORSIZE
+    GLfloat bubbleVertices[] = {
+        -NEIGHBOURHOOD_RADIUS, 0.f,    -NEIGHBOURHOOD_RADIUS,
+        -NEIGHBOURHOOD_RADIUS, 0.f,     NEIGHBOURHOOD_RADIUS,
+        NEIGHBOURHOOD_RADIUS,  0.f,    -NEIGHBOURHOOD_RADIUS,
+        NEIGHBOURHOOD_RADIUS,  0.f,    NEIGHBOURHOOD_RADIUS,
+
+        -BUBBLE_RADIUS, 0.001f,    -BUBBLE_RADIUS,
+        -BUBBLE_RADIUS, 0.001f,     BUBBLE_RADIUS,
+        BUBBLE_RADIUS,  0.001f,    -BUBBLE_RADIUS,
+        BUBBLE_RADIUS,  0.001f,    BUBBLE_RADIUS
     };
 
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(bubbleVertices), bubbleVertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
 }
-void renderFloor()
+void renderBubbleFloor()
 {
-    glBindVertexArray(floorVertexArray);
-    glUseProgram(floorProgram);
+    glBindVertexArray(bubbleVertexArray);
+    glUseProgram(bubbleProgram);
 
-    passBasicUniforms(floorProgram);
-
+    passBasicUniforms(bubbleProgram);
+    glUniform1i(glGetUniformLocation(bubbleProgram, "pass"), 1);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glUniform1i(glGetUniformLocation(bubbleProgram, "pass"), 0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
 
     glBindVertexArray(0);
 }
@@ -169,20 +182,52 @@ void renderBoids()
     glBindVertexArray(0);
 }
 
+// %%%%%%%%%%%%%%%%%%%%%%%%% simulation
+void simulation(std::vector<Boid*> *boids, int index)
+{
+    float size = 0;
+    glm::vec3 velocity(0.f), heading(0.f);
+    Boid *boid = (*boids)[index], *otherBoid;
+
+    for (int i = 0; i < boids->size(); i++)
+    {
+        if (i == index) continue;
+
+        otherBoid = (*boids)[i];
+        float distance = glm::distance(boid->getPosition(), otherBoid->getPosition());
+        if (distance < NEIGHBOURHOOD_RADIUS)
+        {
+            glm::vec3 differenceVector = normalize(otherBoid->getPosition() - boid->getHeading());
+
+            if (acos(dot(differenceVector, boid->getHeading())) > 135) continue;
+
+            size++;
+            if (distance > BUBBLE_RADIUS)
+                velocity += otherBoid->getHeading() - boid->getPosition();
+            else if (distance < BUBBLE_RADIUS)
+                velocity -= ((distance == 0) ? (100000000.f) : 3.f / distance) * (otherBoid->getHeading() - boid->getPosition());
+        }
+    }
+    boid->updateVelocity(velocity / size);
+
+    boid->move();
+}
+
 // %%%%%%%%%%%%%%%%%%%%%%%%% Program
 int main()
 {
     // initial setup
     GLFWwindow* window = generateWindow();
+
     generateShaders();
-    generateFloorBuffer();
+    generateBubbleFloorBuffer();
 
     std::vector<Boid*> boids;
     generateBoids(&boids);
     generateBoidBuffer(&boids);
 
     // variable initialization for framerate counter
-    time_t startTime = 0, endTime = 0;
+    time_t startTime = 0;
     int frames = 0;
 
     // rendering
@@ -195,7 +240,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearBufferfv(GL_COLOR, 0, clearColor);
 
-        renderFloor();
+        if(checkBubbleFloor()) renderBubbleFloor();
         renderBoids();
 		
         glDisable(GL_DEPTH_TEST);
@@ -204,14 +249,13 @@ int main()
 
         #pragma omp for
         for (int i = 0; i < boids.size(); i++)
-            boids[i]->move();
+            simulation(&boids, i);
 
         refreshBoidBuffer(&boids);
 
         // update and print frames per second
-        endTime = time(NULL);
         frames++;
-        if (difftime(endTime, startTime) >= 1)
+        if (difftime(time(NULL), startTime) >= 1)
         {
             printf("\rFPS: %i", frames);
             frames = 0;

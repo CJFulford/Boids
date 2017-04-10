@@ -11,11 +11,10 @@ in vec3 position[];
 in vec3 heading[];
 in vec3 normal[];
 
-out vec3 pos;
 out vec3 norm;
 
-float widthScale = .1f;
-float headingScale = .4f;
+float widthScale = .01f;
+float headingScale = .04f;
 float heightScale = widthScale / 2.f;
 
 void triangleOut(vec3 p1, vec3 p2, vec3 p3)
@@ -33,7 +32,6 @@ void triangleOut(vec3 p1, vec3 p2, vec3 p3)
 
 void main (void)
 {
-    pos = position[0];
     vec3 sideVec = widthScale * normalize(cross(heading[0], normal[0]));
     vec3 frontVec = heading[0] * headingScale;
     vec3 topVec = normal[0] * heightScale;
