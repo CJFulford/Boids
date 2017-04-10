@@ -11,8 +11,10 @@ out vec3 colour;
 void main (void)
 {    
     gl_Position = projection * modelview * vec4(vertex, 1.f);
-    if (pass == 1)
+    if (pass == 0)
         colour = vec3(.5f, 0.f, 0.f);
-    else
+    else if (pass == 1)
         colour = vec3(0.f, 0.f, 1.f);
+    else 
+        colour = vec3(.5f, .5f, .5f);
 }

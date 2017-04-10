@@ -174,8 +174,6 @@
     <None Include="shaders\boid.vert" />
     <None Include="shaders\bubble.frag" />
     <None Include="shaders\bubble.vert" />
-    <None Include="shaders\floor.frag" />
-    <None Include="shaders\floor.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -55,12 +55,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\floor.vert">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="shaders\floor.frag">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
     <None Include="shaders\boid.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>

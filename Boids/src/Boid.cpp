@@ -14,7 +14,7 @@ void Boid::updateVelocity(glm::vec3 vel)
 
 void Boid::move()
 {
-#define TURNING_RATIO .9f
+#define TURNING_RATIO .95f
 #define SPEED .005f
     heading = normalize((TURNING_RATIO * heading) + ((1.f - TURNING_RATIO)*velocity));
     position += heading * SPEED;

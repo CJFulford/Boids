@@ -6,7 +6,8 @@ in vec3 norm;
 
 vec3 sunLocation = vec3(10.f, 10.f, 2.f);
 
-vec3 diffuseColour = vec3(0.7f, 0.7f, 0.75f);
+vec3 diffuseColour = vec3(0.5f, 1.f, 0.5f);
+float ambientColour = .2f;
 
 void main (void)
 { 
@@ -15,5 +16,5 @@ void main (void)
                                 )
                         );
 
-	color = vec4(diffuseColour * diffuse, 0.f);
+	color = vec4((ambientColour * diffuseColour) + (diffuseColour * diffuse), 0.f);
 }

@@ -4,7 +4,7 @@
 
 class Boid
 {
-private:
+protected:
     // variables
     glm::vec3 position;
     glm::vec3 velocity;
@@ -12,6 +12,7 @@ private:
     glm::vec3 heading;
     glm::vec3 normal;
     float FOV;
+    bool obstacle = false;
 
 public:
 #define zeroVector glm::vec3(0.f)
@@ -41,8 +42,6 @@ public:
     glm::vec3 getNormal();
 
     void updateVelocity(glm::vec3 vel);
-    void updateHeading(glm::vec3 head);
-
 
     void Boid::move();
 };

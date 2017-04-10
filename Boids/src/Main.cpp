@@ -7,19 +7,19 @@
 #include <ctime>
 #include <omp.h>
 
+#define FLOAT_ERROR 1e-5f
+#define FLOOR_HEIGHT -.2f
+#define MAIN_FLOOR_SIZE 10.f
+#define INITIAL_POSITION_RANGE (NUM_OF_BOIDS / 10000.f)
 
-const float FLOORSIZE = NUM_OF_BOIDS / 10000.f;
-#define FLOORHEIGHT -1.f
-const float INITIAL_POSITION_RANGE = NUM_OF_BOIDS / 10000.f;
+#define NEIGHBOURHOOD_RADIUS .125f
+#define BUBBLE_RADIUS .025f
 
-#define NEIGHBOURHOOD_RADIUS .25f
-#define BUBBLE_RADIUS .1f
+#define MIN_ELEVATION .5f
+#define Y_AXIS glm::vec3(0.f, 1.f, 0.f);
 
 const GLfloat clearColor[] = { 0.f, 0.f, 0.f };
 GLuint	
-    floorVertexArray, 
-    floorProgram,
-
     bubbleVertexArray,
     bubbleProgram,
     
@@ -33,7 +33,6 @@ GLuint
 // %%%%%%%%%%%%%%%%%%%%%%%%% shader generation
 void generateShaders()
 {
-    floorProgram = generateProgram("shaders/floor.vert", "shaders/floor.frag");
     bubbleProgram = generateProgram("shaders/bubble.vert", "shaders/bubble.frag");
     boidProgram = generateProgram("shaders/boid.vert", "shaders/boid.geom", "shaders/boid.frag");
 }
@@ -47,15 +46,20 @@ void generateBubbleFloorBuffer()
     glBindVertexArray(bubbleVertexArray);
 
     GLfloat bubbleVertices[] = {
-        -NEIGHBOURHOOD_RADIUS, 0.f,    -NEIGHBOURHOOD_RADIUS,
-        -NEIGHBOURHOOD_RADIUS, 0.f,     NEIGHBOURHOOD_RADIUS,
-        NEIGHBOURHOOD_RADIUS,  0.f,    -NEIGHBOURHOOD_RADIUS,
-        NEIGHBOURHOOD_RADIUS,  0.f,    NEIGHBOURHOOD_RADIUS,
+        -NEIGHBOURHOOD_RADIUS, FLOOR_HEIGHT,    -NEIGHBOURHOOD_RADIUS,
+        -NEIGHBOURHOOD_RADIUS, FLOOR_HEIGHT,     NEIGHBOURHOOD_RADIUS,
+        NEIGHBOURHOOD_RADIUS,  FLOOR_HEIGHT,    -NEIGHBOURHOOD_RADIUS,
+        NEIGHBOURHOOD_RADIUS,  FLOOR_HEIGHT,    NEIGHBOURHOOD_RADIUS,
 
-        -BUBBLE_RADIUS, 0.001f,    -BUBBLE_RADIUS,
-        -BUBBLE_RADIUS, 0.001f,     BUBBLE_RADIUS,
-        BUBBLE_RADIUS,  0.001f,    -BUBBLE_RADIUS,
-        BUBBLE_RADIUS,  0.001f,    BUBBLE_RADIUS
+        -BUBBLE_RADIUS, FLOOR_HEIGHT + 0.001f,    -BUBBLE_RADIUS,
+        -BUBBLE_RADIUS, FLOOR_HEIGHT + 0.001f,     BUBBLE_RADIUS,
+        BUBBLE_RADIUS,  FLOOR_HEIGHT + 0.001f,    -BUBBLE_RADIUS,
+        BUBBLE_RADIUS,  FLOOR_HEIGHT + 0.001f,    BUBBLE_RADIUS,
+
+        -MAIN_FLOOR_SIZE, FLOOR_HEIGHT - 0.001f,    -MAIN_FLOOR_SIZE,
+        -MAIN_FLOOR_SIZE, FLOOR_HEIGHT - 0.001f,     MAIN_FLOOR_SIZE,
+        MAIN_FLOOR_SIZE,  FLOOR_HEIGHT - 0.001f,    -MAIN_FLOOR_SIZE,
+        MAIN_FLOOR_SIZE,  FLOOR_HEIGHT - 0.001f,    MAIN_FLOOR_SIZE
     };
 
     glGenBuffers(1, &vertexBuffer);
@@ -72,11 +76,14 @@ void renderBubbleFloor()
     glUseProgram(bubbleProgram);
 
     passBasicUniforms(bubbleProgram);
-    glUniform1i(glGetUniformLocation(bubbleProgram, "pass"), 1);
+    glUniform1i(glGetUniformLocation(bubbleProgram, "pass"), 0);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    glUniform1i(glGetUniformLocation(bubbleProgram, "pass"), 0);
+    glUniform1i(glGetUniformLocation(bubbleProgram, "pass"), 1);
     glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
+
+    glUniform1i(glGetUniformLocation(bubbleProgram, "pass"), 2);
+    glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
 
     glBindVertexArray(0);
 }
@@ -87,7 +94,7 @@ void generateBoids(std::vector<Boid*> *boids)
     float
         xStartRange = -INITIAL_POSITION_RANGE,
         xEndRange = INITIAL_POSITION_RANGE,
-        yStartRange = FLOORHEIGHT + .5f,      // cant have boids start beneth the floor
+        yStartRange = FLOOR_HEIGHT + MIN_ELEVATION,      // cant have boids start beneth the floor
         yEndRange = INITIAL_POSITION_RANGE,
         zStartRange = -INITIAL_POSITION_RANGE,
         zEndRange = INITIAL_POSITION_RANGE,
@@ -99,7 +106,7 @@ void generateBoids(std::vector<Boid*> *boids)
         boids->push_back(
             new Boid(
                 generateRandomVector(xStartRange, xEndRange, yStartRange, yEndRange, zStartRange, zEndRange),
-                generateRandomVector(-1.f, 1.f, 0.f, 0.f, -1.f, 1.f),
+                generateRandomVector(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f),
                 FOV
             )
         );
@@ -205,12 +212,20 @@ void simulation(std::vector<Boid*> *boids, int index)
             if (distance > BUBBLE_RADIUS)
                 velocity += otherBoid->getHeading() - boid->getPosition();
             else if (distance < BUBBLE_RADIUS)
-                velocity -= ((distance == 0) ? (100000000.f) : 3.f / distance) * (otherBoid->getHeading() - boid->getPosition());
+                velocity -= 3.f / glm::max(FLOAT_ERROR, distance) * (otherBoid->getHeading() - boid->getPosition());
         }
     }
+
+    // keep the boids from going through the floor
+    if (boid->getPosition().y < FLOOR_HEIGHT + MIN_ELEVATION)
+        velocity += (.0001f / (glm::max(FLOAT_ERROR, boid->getPosition().y - (FLOOR_HEIGHT + MIN_ELEVATION)))) * Y_AXIS;
+
     boid->updateVelocity(velocity / size);
 
     boid->move();
+
+    if (length(boid->getPosition()) > 10)
+        int asdf = 1;
 }
 
 // %%%%%%%%%%%%%%%%%%%%%%%%% Program
